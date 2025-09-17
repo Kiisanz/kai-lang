@@ -11,12 +11,12 @@ ImportDecl     = "use" ModulePath ";" ;
 ModulePath     = Identifier { "." Identifier } ;
 
 (* ---------- Types ---------- *)
-TypeDecl       = StructDecl | EnumDecl | AliasDecl ;
+TypeDecl       = [ VisibilityModifier ] ( StructDecl | EnumDecl | AliasDecl ) ;
 
 StructDecl     = "struct" Identifier "{" { StructMember } "}" ;
 StructMember   = FieldDecl | MethodDecl ;
-FieldDecl      = Identifier TypeAnnotation ";" ;
-MethodDecl     = [ ConcurrencyModifier ] "fn" Identifier "(" [ ParamList ] ")" "->" TypeAnnotation Block ;
+FieldDecl      = [ VisibilityModifier ] Identifier TypeAnnotation ";" ;
+MethodDecl     = [ VisibilityModifier ] [ ConcurrencyModifier ] "fn" Identifier "(" [ ParamList ] ")" "->" TypeAnnotation Block ;
 
 EnumDecl       = "enum" Identifier "{" { EnumVariant } "}" ;
 EnumVariant    = Identifier [ "(" TypeAnnotation { "," TypeAnnotation } ")" ] ;
@@ -24,21 +24,23 @@ EnumVariant    = Identifier [ "(" TypeAnnotation { "," TypeAnnotation } ")" ] ;
 AliasDecl      = "type" Identifier "=" Type ;
 
 (* ---------- Variables & Constants ---------- *)
-VarDecl        = ("let" | "mut") Identifier [ TypeAnnotation ] [ "=" Expression ] ";" ;
+VarDecl        = [ VisibilityModifier ] ("let" | "mut") Identifier [ TypeAnnotation ] [ "=" Expression ] ";" ;
   // Semantics:
   // - If no "=", TypeAnnotation required
   // - If has "=", TypeAnnotation optional (inferred from RHS)
 
-ConstDecl      = "const" Identifier TypeAnnotation "=" Expression ";" ;
+ConstDecl      = [ VisibilityModifier ] "const" Identifier TypeAnnotation "=" Expression ";" ;
 
 TypeAnnotation = ":" Type ;
 
 (* ---------- Functions ---------- *)
-FnDecl         = [ ConcurrencyModifier ] "fn" Identifier "(" [ ParamList ] ")" "->" TypeAnnotation Block ;
+FnDecl         = [ VisibilityModifier ] [ ConcurrencyModifier ] "fn" Identifier "(" [ ParamList ] ")" "->" TypeAnnotation Block ;
 ParamList      = Param { "," Param } ;
 Param          = Identifier TypeAnnotation ;
 Block          = "{" { Statement } "}" ;
 
+(* ---------- Modifiers ---------- *)
+VisibilityModifier = "public" | "private" | "protected" ;
 ConcurrencyModifier = "async" | "sync" ;
 
 (* ---------- Statements ---------- *)
