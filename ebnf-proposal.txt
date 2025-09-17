@@ -1,85 +1,165 @@
-Program       = { TopLevelDecl } ;
+Program        = { TopLevelDecl } ;
 
-TopLevelDecl  = ImportDecl
-              | TypeDecl
-              | VarDecl
-              | ConstDecl
-              | FunctionDecl ;
+TopLevelDecl   = ImportDecl
+               | TypeDecl
+               | VarDecl
+               | ConstDecl
+               | FnDecl ;
 
 (* ---------- Imports ---------- *)
-ImportDecl    = "import" StringLiteral ;
+ImportDecl     = "use" ModulePath ";" ;
+ModulePath     = Identifier { "." Identifier } ;
 
 (* ---------- Types ---------- *)
-TypeDecl      = "type" Identifier TypeAnn ;
+TypeDecl       = StructDecl | EnumDecl | AliasDecl ;
+
+StructDecl     = "struct" Identifier "{" { StructMember } "}" ;
+StructMember   = FieldDecl | MethodDecl ;
+FieldDecl      = Identifier TypeAnnotation ";" ;
+MethodDecl     = [ ConcurrencyModifier ] "fn" Identifier "(" [ ParamList ] ")" "->" TypeAnnotation Block ;
+
+EnumDecl       = "enum" Identifier "{" { EnumVariant } "}" ;
+EnumVariant    = Identifier [ "(" TypeAnnotation { "," TypeAnnotation } ")" ] ;
+
+AliasDecl      = "type" Identifier "=" Type ;
 
 (* ---------- Variables & Constants ---------- *)
-VarDecl       = "let" IdentifierList TypeAnn [ "=" Expression ] ;
-ConstDecl     = "const" IdentifierList TypeAnn "=" Expression ;
+VarDecl        = ("let" | "mut") Identifier [ TypeAnnotation ] [ "=" Expression ] ";" ;
+  // Semantics:
+  // - If no "=", TypeAnnotation required
+  // - If has "=", TypeAnnotation optional (inferred from RHS)
 
-IdentifierList = Identifier { "," Identifier } ;
+ConstDecl      = "const" Identifier TypeAnnotation "=" Expression ";" ;
+
+TypeAnnotation = ":" Type ;
 
 (* ---------- Functions ---------- *)
-FunctionDecl  = "fn" Identifier "(" [ ParamList ] ")" [ ReturnAnn ] Block ;
-ParamList     = ParamGroup { "," ParamGroup } ;
-ParamGroup    = Identifier { "," Identifier } TypeAnn ;
-ReturnAnn     = "->" TypeAnn ;
+FnDecl         = [ ConcurrencyModifier ] "fn" Identifier "(" [ ParamList ] ")" "->" TypeAnnotation Block ;
+ParamList      = Param { "," Param } ;
+Param          = Identifier TypeAnnotation ;
+Block          = "{" { Statement } "}" ;
+
+ConcurrencyModifier = "async" | "sync" ;
 
 (* ---------- Statements ---------- *)
-Block         = "{" { Statement } "}" ;
+Statement      = VarDecl
+               | ConstDecl
+               | Assignment ";"
+               | ReturnStmt ";"
+               | IfStmt
+               | WhileStmt
+               | ForStmt
+               | ExpressionStmt ";"
+               | DSLBlock
+               | Block ;
 
-Statement     = VarDecl ";"
-              | ConstDecl ";"
-              | Assignment ";"
-              | ExpressionStmt ";"
-              | ReturnStmt ";"
-              | IfStmt
-              | WhileStmt
-              | ForStmt
-              | Block ;
+Assignment     = LValue "=" Expression ;
+LValue         = Identifier | MemberAccess | IndexAccess ;
 
-Assignment    = Identifier "=" Expression ;
-ExpressionStmt= Expression ;
-ReturnStmt    = "return" [ Expression ] ;
+ReturnStmt     = "return" [ Expression ] ;
 
-IfStmt        = "if" Expression Block [ "else" Block ] ;
-WhileStmt     = "while" Expression Block ;
-ForStmt       = "for" Identifier "in" Expression Block ;
+IfStmt         = "if" Expression Block [ "else" Block ] ;
+
+WhileStmt      = [ LoopModifier ] "while" Expression Block ;
+
+ForStmt        = [ LoopModifier ] "for" Identifier "in" Expression Block ;
+LoopModifier   = "par" | "async" | "sync" ;
+
+ExpressionStmt = Expression ;
+
+(* ---------- DSL Blocks ---------- *)
+DSLBlock       = DSLKeyword "{" DSLContent "}" ;
+DSLKeyword     = "sql" | "html" | "css" | "js" | "json" | "ml" | "regex" | Identifier ;
+DSLContent     = { DSLToken } ;
+DSLToken       = ? any character except unmatched braces, with interpolation support ? ;
+  // Note: DSL blocks support ${expression} interpolation
 
 (* ---------- Expressions ---------- *)
-Expression    = LogicalOr ;
+Expression     = TernaryExpr ;
 
-LogicalOr     = LogicalAnd { "||" LogicalAnd } ;
-LogicalAnd    = Equality { "&&" Equality } ;
-Equality      = Relational { ("==" | "!=") Relational } ;
-Relational    = Additive { ("<" | ">" | "<=" | ">=") Additive } ;
-Additive      = Multiplicative { ("+" | "-") Multiplicative } ;
-Multiplicative= Unary { ("*" | "/" | "%") Unary } ;
-Unary         = [ ("!" | "-" ) ] Primary ;
-Primary       = Identifier
-              | Literal
-              | "(" Expression ")"
-              | FunctionCall ;
+TernaryExpr    = LogicalOr [ "?" Expression ":" Expression ] ;
 
-FunctionCall  = Identifier "(" [ ArgList ] ")" ;
-ArgList       = Expression { "," Expression } ;
+LogicalOr      = LogicalAnd { "||" LogicalAnd } ;
+
+LogicalAnd     = Equality { "&&" Equality } ;
+
+Equality       = Relational { ("==" | "!=") Relational } ;
+
+Relational     = Additive { ("<" | ">" | "<=" | ">=") Additive } ;
+
+Additive       = Multiplicative { ("+" | "-") Multiplicative } ;
+
+Multiplicative = Unary { ("*" | "/" | "%") Unary } ;
+
+Unary          = [ ("!" | "-" | "await") ] Primary ;
+
+Primary        = Identifier
+               | Literal
+               | ArrayLiteral
+               | ObjectLiteral
+               | "(" Expression ")"
+               | MemberAccess
+               | IndexAccess
+               | CallExpr
+               | SpawnExpr ;
+
+MemberAccess   = Primary "." Identifier ;
+
+IndexAccess    = Primary "[" Expression "]" ;
+
+CallExpr       = Primary "(" [ ArgList ] ")" ;
+
+SpawnExpr      = "spawn" CallExpr ;
+  // spawn creates concurrent task
+
+ArgList        = Expression { "," Expression } ;
 
 (* ---------- Literals ---------- *)
-Literal       = IntegerLiteral
-              | FloatLiteral
-              | StringLiteral
-              | BooleanLiteral ;
+Literal        = IntLiteral
+               | FloatLiteral
+               | StringLiteral
+               | BooleanLiteral ;
 
-IntegerLiteral= Digit { Digit } ;
-FloatLiteral  = Digit { Digit } "." Digit { Digit } ;
-StringLiteral = "\"" { Character } "\"" ;
-BooleanLiteral= "true" | "false" ;
+ArrayLiteral   = "[" [ ArgList ] "]" ;
+
+ObjectLiteral  = "{" [ PropertyList ] "}" ;
+PropertyList   = Property { "," Property } ;
+Property       = ( Identifier | StringLiteral ) ":" Expression ;
+
+IntLiteral     = Digit { Digit } ;
+
+FloatLiteral   = Digit { Digit } "." Digit { Digit } ;
+
+StringLiteral  = "\"" { StringChar } "\"" ;
+StringChar     = Character | EscapeSequence | Interpolation ;
+EscapeSequence = "\\" ( "n" | "t" | "r" | "\\" | "\"" | "0" | "u" HexDigit{4} ) ;
+Interpolation  = "${" Expression "}" ;
+
+BooleanLiteral = "true" | "false" ;
 
 (* ---------- Types ---------- *)
-TypeAnn       = Identifier [ Size ] ;
-Size          = Digit { Digit } ;
+Type           = PrimitiveType | Identifier | ArrayType | OptionalType | FunctionType ;
+
+PrimitiveType  = "int8" | "int16" | "int32" | "int64" 
+               | "uint8" | "uint16" | "uint32" | "uint64"
+               | "float32" | "float64" 
+               | "bool" | "string" | "byte" | "rune" ;
+
+ArrayType      = "[" Type "]" ;
+
+OptionalType   = Type "?" ;
+
+FunctionType   = "fn" "(" [ TypeList ] ")" "->" Type ;
+
+TypeList       = Type { "," Type } ;
 
 (* ---------- Lexical ---------- *)
-Identifier    = Letter { Letter | Digit | "_" } ;
-Digit         = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
-Letter        = "A"…"Z" | "a"…"z" ;
-Character     = ? any Unicode character except " and \ ?
+Identifier     = Letter { Letter | Digit | "_" } ;
+
+Digit          = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+HexDigit       = Digit | "A" | "B" | "C" | "D" | "E" | "F" | "a" | "b" | "c" | "d" | "e" | "f" ;
+
+Letter         = "A"…"Z" | "a"…"z" ;
+
+Character      = ? any Unicode character except " and \ ? ;
