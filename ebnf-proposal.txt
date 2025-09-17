@@ -1,0 +1,85 @@
+Program       = { TopLevelDecl } ;
+
+TopLevelDecl  = ImportDecl
+              | TypeDecl
+              | VarDecl
+              | ConstDecl
+              | FunctionDecl ;
+
+(* ---------- Imports ---------- *)
+ImportDecl    = "import" StringLiteral ;
+
+(* ---------- Types ---------- *)
+TypeDecl      = "type" Identifier TypeAnn ;
+
+(* ---------- Variables & Constants ---------- *)
+VarDecl       = "let" IdentifierList TypeAnn [ "=" Expression ] ;
+ConstDecl     = "const" IdentifierList TypeAnn "=" Expression ;
+
+IdentifierList = Identifier { "," Identifier } ;
+
+(* ---------- Functions ---------- *)
+FunctionDecl  = "fn" Identifier "(" [ ParamList ] ")" [ ReturnAnn ] Block ;
+ParamList     = ParamGroup { "," ParamGroup } ;
+ParamGroup    = Identifier { "," Identifier } TypeAnn ;
+ReturnAnn     = "->" TypeAnn ;
+
+(* ---------- Statements ---------- *)
+Block         = "{" { Statement } "}" ;
+
+Statement     = VarDecl ";"
+              | ConstDecl ";"
+              | Assignment ";"
+              | ExpressionStmt ";"
+              | ReturnStmt ";"
+              | IfStmt
+              | WhileStmt
+              | ForStmt
+              | Block ;
+
+Assignment    = Identifier "=" Expression ;
+ExpressionStmt= Expression ;
+ReturnStmt    = "return" [ Expression ] ;
+
+IfStmt        = "if" Expression Block [ "else" Block ] ;
+WhileStmt     = "while" Expression Block ;
+ForStmt       = "for" Identifier "in" Expression Block ;
+
+(* ---------- Expressions ---------- *)
+Expression    = LogicalOr ;
+
+LogicalOr     = LogicalAnd { "||" LogicalAnd } ;
+LogicalAnd    = Equality { "&&" Equality } ;
+Equality      = Relational { ("==" | "!=") Relational } ;
+Relational    = Additive { ("<" | ">" | "<=" | ">=") Additive } ;
+Additive      = Multiplicative { ("+" | "-") Multiplicative } ;
+Multiplicative= Unary { ("*" | "/" | "%") Unary } ;
+Unary         = [ ("!" | "-" ) ] Primary ;
+Primary       = Identifier
+              | Literal
+              | "(" Expression ")"
+              | FunctionCall ;
+
+FunctionCall  = Identifier "(" [ ArgList ] ")" ;
+ArgList       = Expression { "," Expression } ;
+
+(* ---------- Literals ---------- *)
+Literal       = IntegerLiteral
+              | FloatLiteral
+              | StringLiteral
+              | BooleanLiteral ;
+
+IntegerLiteral= Digit { Digit } ;
+FloatLiteral  = Digit { Digit } "." Digit { Digit } ;
+StringLiteral = "\"" { Character } "\"" ;
+BooleanLiteral= "true" | "false" ;
+
+(* ---------- Types ---------- *)
+TypeAnn       = Identifier [ Size ] ;
+Size          = Digit { Digit } ;
+
+(* ---------- Lexical ---------- *)
+Identifier    = Letter { Letter | Digit | "_" } ;
+Digit         = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+Letter        = "A"…"Z" | "a"…"z" ;
+Character     = ? any Unicode character except " and \ ?
