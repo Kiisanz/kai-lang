@@ -146,6 +146,3 @@ x % y
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
-
-
-Mau aku bikinin contoh workflow `ci.yml` minimal buat Kai-lang?
