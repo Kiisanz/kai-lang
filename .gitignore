@@ -1,0 +1,29 @@
+# Rust
+/target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+/editor_support/*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flux
+*.flux.out
+*.flux.log
+flux_cache/
+
+# Benchmarks
+criterion/
+
+# Test artifacts
+test_outputs/

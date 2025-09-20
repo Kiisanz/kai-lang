@@ -1,0 +1,35 @@
+[package]
+name = "flux"
+version = "0.0.1"
+edition = "2021"
+authors = ["Rmaul <me@rmaul.dev>"]
+description = "Flux programming language - concurrent, expressive, domain-specific friendly"
+repository = "https://github.com/kiisanz/flux-lang"
+license = "MIT"
+keywords = ["programming-language", "compiler", "interpreter", "concurrency", "dsl"]
+categories = ["compilers", "development-tools"]
+
+[[bin]]
+name = "flux"
+path = "src/main.rs"
+
+[lib]
+name = "flux_core"
+path = "src/lib.rs"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+thiserror = "2.0"
+colored = "3.0"
+rustyline = "17.0"
+once_cell = "1.19"
+
+[dev-dependencies]
+criterion = "0.7.0"
+proptest = "1.0"
+pretty_assertions = "1.0"
+
