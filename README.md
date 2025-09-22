@@ -10,13 +10,15 @@ Kai-lang is an experimental statically typed language designed for clarity, conc
 
 Kai-lang combines strong static typing with optional type inference, structured concurrency primitives (`async`, `spawn`, `par`), and first-class DSL integration. Syntax is designed to be clean, expressive, and maintainable, enabling both general-purpose programming and domain-specific extensions.
 
-## Parser Status
+## Development Status
 
-The AST parser is under active development. Variable declarations (VarDecl) are stable and fully functional. Function declarations (FnDecl) are still being stabilized and may undergo breaking changes. Full AST design, semantic analysis, IR, code generation, and runtime support are in progress.
+* The language grammar is defined using EBNF notation (see `docs/grammar.ebnf` for full specification).
+* The AST parser is under active development. Variable declarations (VarDecl) are stable and fully functional. Function declarations (FnDecl) are still being stabilized and may undergo breaking changes. Full AST design, semantic analysis, IR, code generation, and runtime support are in progress.
+
 
 ## Roadmap Highlights
 
-* **Grammar & Lexer** Completed (Sep 2025)
+* **Grammar & Lexer** Completed - grammar defined in `docs/grammar.ebnf` (Sep 2025)
 * **Parser Basic AST** In development (Sep 2025 - Nov 2025)
 * **Semantic Analysis** Planned (Dec 2025 – Jan 2026)
 * **IR & Code Generation** Planned (Feb–Apr 2026)
