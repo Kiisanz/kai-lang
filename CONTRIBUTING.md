@@ -1,4 +1,4 @@
-# Contributing to Kai-lang
+# Contributing to Kai-lang!
 
 Thank you for your interest in contributing to **Kai-lang**!  
 This project is still in an early development phase, and contributions are welcome across all areas compiler, runtime, tooling, and documentation.
