@@ -1,8 +1,11 @@
 use crate::parser::expr::Literal;
+use std::hash::{Hash, Hasher};
+use std::mem::discriminant;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Type {
+    Unknown,
     Int8, Int16, Int32, Int64,
     Uint8, Uint16, Uint32, Uint64,
     Float32, Float64,
@@ -52,6 +55,31 @@ impl Type {
             (Type::Float32 | Type::Float64,
              Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64) => true,
             _ => false,
+        }
+    }
+
+    pub fn is_numeric(&self) -> bool {
+        matches!(
+            self,
+            Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 |
+            Type::Uint8 | Type::Uint16 | Type::Uint32 | Type::Uint64 |
+            Type::Float32 | Type::Float64
+        )
+    }
+}
+
+
+impl Eq for Type {}
+
+impl Hash for Type {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        discriminant(self).hash(state);
+
+        match self {
+            Type::Custom(name) => name.hash(state),
+            Type::Optional(inner) => inner.hash(state),
+            Type::Array(inner) => inner.hash(state),
+            _ => {} 
         }
     }
 }

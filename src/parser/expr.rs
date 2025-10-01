@@ -5,10 +5,25 @@ use crate::lexer::TokenType;
 pub enum Expr {
     Literal(Literal),
     Identifier(String),
-    Unary { op: UnaryOp, expr: Box<Expr> },
-    Binary { left: Box<Expr>, op: BinaryOp, right: Box<Expr> },
-    Assignment { name: String, value: Box<Expr> },
+    Unary {
+        op: UnaryOp,
+        expr: Box<Expr>,
+    },
+    Binary {
+        left: Box<Expr>,
+        op: BinaryOp,
+        right: Box<Expr>,
+    },
+    Assignment {
+        name: String,
+        value: Box<Expr>,
+    },
     Grouping(Box<Expr>),
+    Block(Vec<Expr>),
+    Call {
+        name: String,
+        args: Vec<Expr>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -29,22 +44,29 @@ pub enum UnaryOp {
 impl UnaryOp {
     pub fn from_token(token: &TokenType) -> Option<Self> {
         match token {
-            TokenType::Plus  => Some(UnaryOp::Positive), // unary plus
-            TokenType::Minus => Some(UnaryOp::Negate),   // unary minus
-            TokenType::Not   => Some(UnaryOp::Not),      // logical not
+            TokenType::Plus => Some(UnaryOp::Positive), // unary plus
+            TokenType::Minus => Some(UnaryOp::Negate),  // unary minus
+            TokenType::Not => Some(UnaryOp::Not),       // logical not
             _ => None,
         }
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum BinaryOp {
-    Add, Sub, Mul, Div, Mod,
-    Greater, GreaterEqual,
-    Less, LessEqual,
-    Equal, NotEqual,
-    And, Or,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+    Equal,
+    NotEqual,
+    And,
+    Or,
 }
 
 #[allow(dead_code)]

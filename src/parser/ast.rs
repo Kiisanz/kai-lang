@@ -1,8 +1,11 @@
+use crate::parser::Expr;
+
 #[derive(Debug, Clone, PartialEq)]
 #[allow(dead_code)]
 pub enum ASTNode {
     Program(Program),
     VarDecl(VarDecl),
+    FnDecl(FnDecl),
     Visibility(Visibility),
     Mutability(Mutability),
     Type(super::types::Type),
@@ -29,6 +32,25 @@ pub struct VarDecl {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct FnDecl {
+    pub visibility: Option<Visibility>,
+    pub name: String,
+    pub parameters: Vec<Parameter>,
+    pub return_type: Option<super::types::Type>,
+    pub body: Option<Expr>,
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Parameter {
+    pub name: String,
+    pub param_type: super::types::Type,
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Visibility {
     Public,
     Private,
@@ -40,3 +62,5 @@ pub enum Mutability {
     Let,
     Mut,
 }
+
+
