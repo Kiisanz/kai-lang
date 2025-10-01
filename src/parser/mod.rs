@@ -3,6 +3,7 @@ pub mod rd_parser;
 pub mod symbol_table;
 pub mod expr;
 pub mod types;
+pub mod semantic;
 
 pub use rd_parser::{RecursiveDescentParser};
 pub use symbol_table::{SymbolTable};
@@ -11,3 +12,6 @@ pub use symbol_table::{SymbolTable};
 pub use ast::*;
 pub use expr::*;
 pub use types::*;
+
+
+pub mod recursive_descent;
